@@ -6,17 +6,17 @@ node_modules
 .pnp.js
 
 # build
-/out
-/dist
+**/out
+**/dist
 
 # keys
-/templates/react/neardev
+**/templates/react/neardev
 
 # testing
-/coverage
+**/coverage
 
 # production
-/build
+**/build
 
 # misc
 .DS_Store
@@ -24,8 +24,13 @@ node_modules
 .env.development.local
 .env.test.local
 .env.production.local
-/.cache
+**/.cache
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+**/target
+contract/neardev
+frontend/.parcel-cache
+**/*.rs.bk

@@ -1,2 +1,0 @@
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/typenum-bbbd944f7adb252c/out/consts.rs
-cargo:rustc-env=TYPENUM_BUILD_OP=/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/typenum-bbbd944f7adb252c/out/op.rs
