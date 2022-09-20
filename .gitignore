@@ -1,23 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-# Developer note: near.gitignore will be renamed to .gitignore upon project creation
-# dependencies
-node_modules
-/.pnp
-.pnp.js
-
-# build
-**/out
-**/dist
-
-# keys
-**/templates/react/neardev
-
-# testing
-**/coverage
-
-# production
-**/build
-
 # misc
 .DS_Store
 .env.local
@@ -31,6 +11,7 @@ yarn-debug.log*
 yarn-error.log*
 
 **/target
-contract/neardev
-frontend/.parcel-cache
 **/*.rs.bk
+**/build
+**/node_modules
+**/neardev

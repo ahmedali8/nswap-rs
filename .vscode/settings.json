@@ -1,0 +1,7 @@
+{
+  "rust-analyzer.diagnostics.disabled": [
+    "missing-unsafe",
+    "unresolved-proc-macro"
+  ],
+  "rust-analyzer.cargo.noDefaultFeatures": true
+}
