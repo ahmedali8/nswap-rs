@@ -16,6 +16,7 @@ jobs:
       env:
         RUSTFLAGS: -C link-arg=-s
     steps:
+      - uses: actions/checkout@v3
       - run: |
           apt-get update && apt-get install -y git less vim clang && \
           make rust-setup && \
