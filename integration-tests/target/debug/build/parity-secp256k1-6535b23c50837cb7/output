@@ -1,0 +1,43 @@
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-fPIC" "-g" "-fno-omit-frame-pointer" "-arch" "arm64" "-Wall" "-Wextra" "-o" "/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/parity-secp256k1-6535b23c50837cb7/out/depend/check_uint128_t.o" "-c" "depend/check_uint128_t.c"
+exit status: 0
+running: "ar" "cq" "/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/parity-secp256k1-6535b23c50837cb7/out/libcheck_uint128_t.a" "/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/parity-secp256k1-6535b23c50837cb7/out/depend/check_uint128_t.o"
+exit status: 0
+running: "ar" "s" "/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/parity-secp256k1-6535b23c50837cb7/out/libcheck_uint128_t.a"
+exit status: 0
+TARGET = Some("aarch64-apple-darwin")
+OPT_LEVEL = Some("0")
+HOST = Some("aarch64-apple-darwin")
+CC_aarch64-apple-darwin = None
+CC_aarch64_apple_darwin = None
+HOST_CC = None
+CC = None
+CFLAGS_aarch64-apple-darwin = None
+CFLAGS_aarch64_apple_darwin = None
+HOST_CFLAGS = None
+CFLAGS = None
+CRATE_CC_NO_DEFAULTS = None
+CARGO_CFG_TARGET_FEATURE = Some("aes,crc,dit,dotprod,dpb,dpb2,fcma,fhm,flagm,fp16,frintts,jsconv,lor,lse,neon,paca,pacg,pan,pmuv3,ras,rcpc,rcpc2,rdm,sb,sha2,sha3,ssbs,vh")
+CC_aarch64-apple-darwin = None
+CC_aarch64_apple_darwin = None
+HOST_CC = None
+CC = None
+CFLAGS_aarch64-apple-darwin = None
+CFLAGS_aarch64_apple_darwin = None
+HOST_CFLAGS = None
+CFLAGS = None
+CRATE_CC_NO_DEFAULTS = None
+CARGO_CFG_TARGET_FEATURE = Some("aes,crc,dit,dotprod,dpb,dpb2,fcma,fhm,flagm,fp16,frintts,jsconv,lor,lse,neon,paca,pacg,pan,pmuv3,ras,rcpc,rcpc2,rdm,sb,sha2,sha3,ssbs,vh")
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-fPIC" "-g" "-fno-omit-frame-pointer" "-arch" "arm64" "-I" "depend/secp256k1/" "-I" "depend/secp256k1/include" "-I" "depend/secp256k1/src" "-Wall" "-Wextra" "-Wno-unused-function" "-DSECP256K1_BUILD=1" "-DECMULT_WINDOW_SIZE=8" "-DECMULT_GEN_PREC_BITS=4" "-DUSE_NUM_NONE=1" "-DUSE_FIELD_INV_BUILTIN=1" "-DUSE_SCALAR_INV_BUILTIN=1" "-DUSE_ENDOMORPHISM=1" "-DENABLE_MODULE_ECDH=1" "-DENABLE_MODULE_RECOVERY=1" "-DUSE_FIELD_5X52=1" "-DUSE_SCALAR_4X64=1" "-DHAVE___INT128=1" "-o" "/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/parity-secp256k1-6535b23c50837cb7/out/depend/secp256k1/contrib/lax_der_parsing.o" "-c" "depend/secp256k1/contrib/lax_der_parsing.c"
+exit status: 0
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-fPIC" "-g" "-fno-omit-frame-pointer" "-arch" "arm64" "-I" "depend/secp256k1/" "-I" "depend/secp256k1/include" "-I" "depend/secp256k1/src" "-Wall" "-Wextra" "-Wno-unused-function" "-DSECP256K1_BUILD=1" "-DECMULT_WINDOW_SIZE=8" "-DECMULT_GEN_PREC_BITS=4" "-DUSE_NUM_NONE=1" "-DUSE_FIELD_INV_BUILTIN=1" "-DUSE_SCALAR_INV_BUILTIN=1" "-DUSE_ENDOMORPHISM=1" "-DENABLE_MODULE_ECDH=1" "-DENABLE_MODULE_RECOVERY=1" "-DUSE_FIELD_5X52=1" "-DUSE_SCALAR_4X64=1" "-DHAVE___INT128=1" "-o" "/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/parity-secp256k1-6535b23c50837cb7/out/depend/ext.o" "-c" "depend/ext.c"
+exit status: 0
+AR_aarch64-apple-darwin = None
+AR_aarch64_apple_darwin = None
+HOST_AR = None
+AR = None
+running: "ar" "cq" "/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/parity-secp256k1-6535b23c50837cb7/out/libsecp256k1.a" "/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/parity-secp256k1-6535b23c50837cb7/out/depend/secp256k1/contrib/lax_der_parsing.o" "/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/parity-secp256k1-6535b23c50837cb7/out/depend/ext.o"
+exit status: 0
+running: "ar" "s" "/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/parity-secp256k1-6535b23c50837cb7/out/libsecp256k1.a"
+exit status: 0
+cargo:rustc-link-lib=static=secp256k1
+cargo:rustc-link-search=native=/Users/ahmedali/Disk/developer/xord/OKRs/nswap-rs/integration-tests/target/debug/build/parity-secp256k1-6535b23c50837cb7/out
