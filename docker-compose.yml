@@ -1,0 +1,21 @@
+version: "3"
+services:
+  ubuntu:
+    image: dev-ubuntu:v0.0.1
+    container_name: dev-ubuntu
+    env_file: .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - USER
+        - UID
+        - GID
+    volumes:
+      - ~/dev:/home/dev
+    user: $UID:$GID
+    stdin_open: true
+    tty: true # (pseudo terminal) connects a user's terminal with stdin and stdout stream
+    command: tail -f /dev/null
+    ports:
+      - 8080:8080
