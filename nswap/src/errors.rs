@@ -69,7 +69,6 @@ pub const ERR89_WRONG_AMOUNT_COUNT: &str = "E89: wrong amount count";
 pub const ERR100_NOT_ALLOWED: &str = "E100: no permission to invoke this";
 pub const ERR101_ILLEGAL_FEE: &str = "E101: illegal fee";
 pub const ERR102_INVALID_TOKEN_ID: &str = "E102: invalid token id";
-pub const ERR103_NOT_INITIALIZED: &str = "E103: contract is not initialized";
 
 //mft
 pub const ERR110_INVALID_REGISTER: &str = "E110: Invalid register";

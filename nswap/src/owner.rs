@@ -1,9 +1,6 @@
 //! Implement all the relevant logic for owner of this contract.
 
-use near_contract_standards::fungible_token::core_impl::ext_fungible_token;
-
-use crate::legacy::ContractV1;
-use crate::utils::{FEE_DIVISOR, GAS_FOR_BASIC_OP};
+use crate::utils::FEE_DIVISOR;
 use crate::*;
 
 #[near_bindgen]
@@ -19,37 +16,6 @@ impl Contract {
     /// Get the owner of this account.
     pub fn get_owner(&self) -> AccountId {
         self.owner_id.clone()
-    }
-
-    /// Retrieve NEP-141 tokens that not mananged by contract to owner,
-    /// Caution: Must check that `amount <= total_amount_in_account - amount_managed_by_contract` before calling !!!
-    /// Returns promise of ft_transfer action.
-    #[payable]
-    pub fn retrieve_unmanaged_token(
-        &mut self,
-        token_id: ValidAccountId,
-        amount: U128,
-    ) -> Promise {
-        self.assert_owner();
-        assert_one_yocto();
-        let token_id: AccountId = token_id.into();
-        let amount: u128 = amount.into();
-        assert!(amount > 0, "{}", ERR29_ILLEGAL_WITHDRAW_AMOUNT);
-        env::log(
-            format!(
-                "Going to retrieve token {} to owner, amount: {}",
-                &token_id, amount
-            )
-            .as_bytes(),
-        );
-        ext_fungible_token::ft_transfer(
-            self.owner_id.clone(),
-            U128(amount),
-            None,
-            &token_id,
-            1,
-            env::prepaid_gas() - GAS_FOR_BASIC_OP,
-        )
     }
 
     /// Extend guardians. Only can be called by owner.
@@ -214,92 +180,5 @@ impl Contract {
     pub(crate) fn is_owner_or_guardians(&self) -> bool {
         env::predecessor_account_id() == self.owner_id
             || self.guardians.contains(&env::predecessor_account_id())
-    }
-
-    /// Migration function from v1.5.x to v1.6.0.
-    /// For next version upgrades, change this function.
-    #[init(ignore_state)]
-    #[private]
-    pub fn migrate() -> Self {
-        let old: ContractV1 = env::state_read().expect(ERR103_NOT_INITIALIZED);
-        Self {
-            owner_id: old.owner_id.clone(),
-            exchange_fee: old.exchange_fee,
-            referral_fee: old.referral_fee,
-            pools: old.pools,
-            accounts: old.accounts,
-            whitelisted_tokens: old.whitelisted_tokens,
-            guardians: old.guardians,
-            state: old.state,
-            frozen_tokens: UnorderedSet::new(StorageKey::Frozenlist),
-        }
-    }
-}
-
-#[cfg(target_arch = "wasm32")]
-mod upgrade {
-    use near_sdk::env::BLOCKCHAIN_INTERFACE;
-    use near_sdk::Gas;
-
-    use super::*;
-
-    const BLOCKCHAIN_INTERFACE_NOT_SET_ERR: &str =
-        "Blockchain interface not set.";
-
-    /// Gas for calling migration call.
-    pub const GAS_FOR_MIGRATE_CALL: Gas = 5_000_000_000_000;
-
-    /// Self upgrade and call migrate, optimizes gas by not loading into memory the code.
-    /// Takes as input non serialized set of bytes of the code.
-    #[no_mangle]
-    pub extern "C" fn upgrade() {
-        env::setup_panic_hook();
-        env::set_blockchain_interface(Box::new(
-            near_blockchain::NearBlockchain {},
-        ));
-        let contract: Contract =
-            env::state_read().expect(ERR103_NOT_INITIALIZED);
-        contract.assert_owner();
-        let current_id = env::current_account_id().into_bytes();
-        let method_name = "migrate".as_bytes().to_vec();
-        unsafe {
-            BLOCKCHAIN_INTERFACE.with(|b| {
-                // Load input into register 0.
-                b.borrow()
-                    .as_ref()
-                    .expect(BLOCKCHAIN_INTERFACE_NOT_SET_ERR)
-                    .input(0);
-                let promise_id = b
-                    .borrow()
-                    .as_ref()
-                    .expect(BLOCKCHAIN_INTERFACE_NOT_SET_ERR)
-                    .promise_batch_create(
-                        current_id.len() as _,
-                        current_id.as_ptr() as _,
-                    );
-                b.borrow()
-                    .as_ref()
-                    .expect(BLOCKCHAIN_INTERFACE_NOT_SET_ERR)
-                    .promise_batch_action_deploy_contract(
-                        promise_id,
-                        u64::MAX as _,
-                        0,
-                    );
-                let attached_gas =
-                    env::prepaid_gas() - env::used_gas() - GAS_FOR_MIGRATE_CALL;
-                b.borrow()
-                    .as_ref()
-                    .expect(BLOCKCHAIN_INTERFACE_NOT_SET_ERR)
-                    .promise_batch_action_function_call(
-                        promise_id,
-                        method_name.len() as _,
-                        method_name.as_ptr() as _,
-                        0 as _,
-                        0 as _,
-                        0 as _,
-                        attached_gas,
-                    );
-            });
-        }
     }
 }

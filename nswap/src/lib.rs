@@ -13,12 +13,11 @@ use near_sdk::{
     BorshStorageKey, PanicOnDefault, Promise, PromiseResult, StorageUsage,
 };
 
-use crate::account_deposit::{Account, VAccount};
+use crate::account_deposit::Account;
 pub use crate::action::Action;
 use crate::action::ActionResult;
 pub use crate::action::SwapAction;
 use crate::admin_fee::AdminFees;
-pub use crate::custom_keys::*;
 use crate::errors::*;
 use crate::pool::Pool;
 use crate::simple_pool::SimplePool;
@@ -28,9 +27,7 @@ pub use crate::views::{ContractMetadata, PoolInfo};
 mod account_deposit;
 mod action;
 mod admin_fee;
-mod custom_keys;
 mod errors;
-mod legacy;
 mod multi_fungible_token;
 mod owner;
 mod pool;
@@ -90,7 +87,7 @@ pub struct Contract {
     /// List of all the pools.
     pools: Vector<Pool>,
     /// Accounts registered, keeping track all the amounts deposited, storage and more.
-    accounts: LookupMap<AccountId, VAccount>,
+    accounts: LookupMap<AccountId, Account>,
     /// Set of whitelisted tokens by "owner".
     whitelisted_tokens: UnorderedSet<AccountId>,
     /// Set of guardians.
@@ -1323,11 +1320,12 @@ mod tests {
             .predecessor_account_id(accounts(1))
             .attached_deposit(1)
             .build());
-        contract.retrieve_unmanaged_token(accounts(2), U128(1));
+
         testing_env!(context
             .predecessor_account_id(accounts(1))
             .attached_deposit(1)
             .build());
+
         contract.extend_guardians(vec![accounts(2)]);
         assert_eq!(vec![accounts(2).to_string()], contract.get_guardians());
         testing_env!(context

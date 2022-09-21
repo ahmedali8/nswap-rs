@@ -1,10 +1,9 @@
 //! Account deposit is information per user about their balances in the exchange.
 
 use near_sdk::collections::UnorderedMap;
-use std::collections::HashMap;
 
-use crate::legacy::AccountV1;
 use crate::utils::{ext_self, GAS_FOR_FT_TRANSFER, GAS_FOR_RESOLVE_TRANSFER};
+use crate::Contract;
 use crate::*;
 use near_contract_standards::fungible_token::core_impl::ext_fungible_token;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
@@ -13,7 +12,6 @@ use near_sdk::{
     assert_one_yocto, env, near_bindgen, AccountId, Balance, PromiseResult,
     StorageUsage,
 };
-
 const U128_STORAGE: StorageUsage = 16;
 const U64_STORAGE: StorageUsage = 8;
 const U32_STORAGE: StorageUsage = 4;
@@ -38,28 +36,6 @@ pub const INIT_ACCOUNT_STORAGE: StorageUsage = ACC_ID_AS_CLT_KEY_STORAGE
     + U32_STORAGE
     + U64_STORAGE;
 
-#[derive(BorshDeserialize, BorshSerialize)]
-pub enum VAccount {
-    V1(AccountV1),
-    Current(Account),
-}
-
-impl VAccount {
-    /// Upgrades from other versions to the currently used version.
-    pub fn into_current(self, account_id: &AccountId) -> Account {
-        match self {
-            VAccount::Current(account) => account,
-            VAccount::V1(account) => account.into_current(account_id),
-        }
-    }
-}
-
-impl From<Account> for VAccount {
-    fn from(account: Account) -> Self {
-        VAccount::Current(account)
-    }
-}
-
 /// Account deposits information and storage cost.
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct Account {
@@ -67,7 +43,6 @@ pub struct Account {
     /// Used for storage right now, but in future can be used for trading as well.
     pub near_amount: Balance,
     /// Amounts of various tokens deposited to this account.
-    pub legacy_tokens: HashMap<AccountId, Balance>,
     pub tokens: UnorderedMap<AccountId, Balance>,
     pub storage_used: StorageUsage,
 }
@@ -76,7 +51,6 @@ impl Account {
     pub fn new(account_id: &AccountId) -> Self {
         Account {
             near_amount: 0,
-            legacy_tokens: HashMap::new(),
             tokens: UnorderedMap::new(StorageKey::AccountTokens {
                 account_id: account_id.clone(),
             }),
@@ -87,20 +61,13 @@ impl Account {
     pub fn get_balance(&self, token_id: &AccountId) -> Option<Balance> {
         if let Some(token_balance) = self.tokens.get(token_id) {
             Some(token_balance)
-        } else if let Some(legacy_token_balance) =
-            self.legacy_tokens.get(token_id)
-        {
-            Some(*legacy_token_balance)
         } else {
             None
         }
     }
 
     pub fn get_tokens(&self) -> Vec<AccountId> {
-        let mut a: Vec<AccountId> = self.tokens.keys().collect();
-        let b: Vec<AccountId> = self.legacy_tokens.keys().cloned().collect();
-        a.extend(b);
-        a
+        self.tokens.keys().collect()
     }
 
     /// Deposit amount to the balance of given token,
@@ -114,10 +81,6 @@ impl Account {
             // token has been registered, just add without storage check,
             let new_balance = balance + amount;
             self.tokens.insert(token, &new_balance);
-            true
-        } else if let Some(x) = self.legacy_tokens.get_mut(token) {
-            // token has been registered, just add without storage check
-            *x += amount;
             true
         } else {
             // check storage after insert, if fail should unregister the token
@@ -134,10 +97,7 @@ impl Account {
     /// Deposit amount to the balance of given token.
     pub(crate) fn deposit(&mut self, token: &AccountId, amount: Balance) {
         if amount > 0 {
-            if let Some(x) = self.legacy_tokens.remove(token) {
-                // need convert to tokens
-                self.tokens.insert(token, &(amount + x));
-            } else if let Some(x) = self.tokens.get(token) {
+            if let Some(x) = self.tokens.get(token) {
                 self.tokens.insert(token, &(amount + x));
             } else {
                 self.tokens.insert(token, &amount);
@@ -149,11 +109,7 @@ impl Account {
     /// Panics if `amount` is bigger than the current balance.
     pub(crate) fn withdraw(&mut self, token: &AccountId, amount: Balance) {
         if amount > 0 {
-            if let Some(x) = self.legacy_tokens.remove(token) {
-                // need convert to
-                assert!(x >= amount, "{}", ERR22_NOT_ENOUGH_TOKENS);
-                self.tokens.insert(token, &(x - amount));
-            } else if let Some(x) = self.tokens.get(token) {
+            if let Some(x) = self.tokens.get(token) {
                 assert!(x >= amount, "{}", ERR22_NOT_ENOUGH_TOKENS);
                 self.tokens.insert(token, &(x - amount));
             } else {
@@ -165,8 +121,6 @@ impl Account {
     /// Returns amount of $NEAR necessary to cover storage used by this data structure.
     pub fn storage_usage(&self) -> Balance {
         (INIT_ACCOUNT_STORAGE
-            + self.legacy_tokens.len() as u64
-                * (ACC_ID_AS_KEY_STORAGE + U128_STORAGE)
             + self.tokens.len() as u64
                 * (KEY_PREFIX_ACC + ACC_ID_AS_KEY_STORAGE + U128_STORAGE))
             as u128
@@ -207,11 +161,9 @@ impl Account {
         }
     }
 
-    /// Unregisters `token_id` from this account balance.
+    /// Unregister `token_id` from this account balance.
     /// Panics if the `token_id` balance is not 0.
     pub(crate) fn unregister(&mut self, token_id: &AccountId) {
-        let amount = self.legacy_tokens.remove(token_id).unwrap_or_default();
-        assert_eq!(amount, 0, "{}", ERR24_NON_ZERO_TOKEN_BALANCE);
         let amount = self.tokens.remove(token_id).unwrap_or_default();
         assert_eq!(amount, 0, "{}", ERR24_NON_ZERO_TOKEN_BALANCE);
     }
@@ -440,12 +392,11 @@ impl Contract {
         &self,
         account_id: &AccountId,
     ) -> Option<Account> {
-        self.accounts.get(account_id).map(|va| va.into_current(account_id))
+        self.accounts.get(account_id)
     }
 
     pub fn internal_unwrap_account(&self, account_id: &AccountId) -> Account {
-        self.internal_get_account(account_id)
-            .expect(errors::ERR10_ACC_NOT_REGISTERED)
+        self.internal_get_account(account_id).expect(ERR10_ACC_NOT_REGISTERED)
     }
 
     pub fn internal_unwrap_or_default_account(

@@ -11,9 +11,6 @@ use uint::construct_uint;
 /// Attach no deposit.
 pub const NO_DEPOSIT: u128 = 0;
 
-/// 10T gas for basic operation
-pub const GAS_FOR_BASIC_OP: Gas = 10_000_000_000_000;
-
 /// hotfix_insuffient_gas_for_mft_resolve_transfer.
 pub const GAS_FOR_RESOLVE_TRANSFER: Gas = 20_000_000_000_000;
 
@@ -32,11 +29,6 @@ pub const INIT_SHARES_SUPPLY: u128 = 1_000_000_000_000_000_000_000_000;
 construct_uint! {
     /// 256-bit unsigned integer.
     pub struct U256(4);
-}
-
-construct_uint! {
-    /// 384-bit unsigned integer.
-    pub struct U384(6);
 }
 
 /// Volume of swap on the given token.
