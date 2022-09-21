@@ -1839,7 +1839,6 @@ dependencies = [
  "once_cell",
  "rand 0.8.5",
  "rand_pcg",
- "test-rated-token",
  "test-token",
  "uint",
 ]
@@ -2690,14 +2689,6 @@ dependencies = [
  "redox_syscall 0.2.16",
  "remove_dir_all",
  "winapi",
-]
-
-[[package]]
-name = "test-rated-token"
-version = "0.1.2"
-dependencies = [
- "near-contract-standards",
- "near-sdk",
 ]
 
 [[package]]

@@ -34,7 +34,6 @@ enum TokenOrPool {
     Pool(u64),
 }
 
-/// [AUDIT_06]
 /// This is used to parse token_id fields in mft protocol used in ref,
 /// So, if we choose #nn as a partern, should announce it in mft protocol.
 /// cause : is not allowed in a normal account id, it can be a partern leading char
@@ -68,7 +67,6 @@ impl Contract {
         amount: u128,
         memo: Option<String>,
     ) {
-        // [AUDIT_07]
         assert_ne!(sender_id, receiver_id, "{}", ERR33_TRANSFER_TO_SELF);
         match parse_token_id(token_id) {
             TokenOrPool::Pool(pool_id) => {
@@ -284,7 +282,6 @@ impl Contract {
                 let pool = self.pools.get(pool_id).expect(ERR85_NO_POOL);
                 let decimals = pool.get_share_decimal();
                 FungibleTokenMetadata {
-                    // [AUDIT_08]
                     spec: "mft-1.0.0".to_string(),
                     name: format!("ref-pool-{}", pool_id),
                     symbol: format!("REF-POOL-{}", pool_id),

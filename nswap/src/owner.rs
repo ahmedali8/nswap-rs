@@ -1,10 +1,8 @@
 //! Implement all the relevant logic for owner of this contract.
 
 use near_contract_standards::fungible_token::core_impl::ext_fungible_token;
-use near_sdk::json_types::WrappedTimestamp;
 
 use crate::legacy::ContractV1;
-use crate::rated_swap::rate::{global_register_rate, global_unregister_rate};
 use crate::utils::{FEE_DIVISOR, GAS_FOR_BASIC_OP};
 use crate::*;
 
@@ -204,84 +202,6 @@ impl Contract {
         self.internal_send_tokens(&owner_id, &token_id, amount)
     }
 
-    /// to eventually change a stable pool's amp factor
-    /// pool_id: the target stable pool;
-    /// future_amp_factor: the target amp factor, could be less or more than current one;
-    /// future_amp_time: the endtime of the increasing or decreasing process;
-    #[payable]
-    pub fn stable_swap_ramp_amp(
-        &mut self,
-        pool_id: u64,
-        future_amp_factor: u64,
-        future_amp_time: WrappedTimestamp,
-    ) {
-        assert_one_yocto();
-        assert!(self.is_owner_or_guardians(), "{}", ERR100_NOT_ALLOWED);
-        let mut pool = self.pools.get(pool_id).expect(ERR85_NO_POOL);
-        match &mut pool {
-            Pool::StableSwapPool(pool) => pool.ramp_amplification(
-                future_amp_factor as u128,
-                future_amp_time.0,
-            ),
-            Pool::RatedSwapPool(pool) => pool.ramp_amplification(
-                future_amp_factor as u128,
-                future_amp_time.0,
-            ),
-            _ => env::panic(ERR88_NOT_STABLE_POOL.as_bytes()),
-        }
-        self.pools.replace(pool_id, &pool);
-    }
-
-    #[payable]
-    pub fn stable_swap_stop_ramp_amp(&mut self, pool_id: u64) {
-        assert_one_yocto();
-        assert!(self.is_owner_or_guardians(), "{}", ERR100_NOT_ALLOWED);
-        let mut pool = self.pools.get(pool_id).expect(ERR85_NO_POOL);
-        match &mut pool {
-            Pool::StableSwapPool(pool) => pool.stop_ramp_amplification(),
-            Pool::RatedSwapPool(pool) => pool.stop_ramp_amplification(),
-            _ => env::panic(ERR88_NOT_STABLE_POOL.as_bytes()),
-        }
-        self.pools.replace(pool_id, &pool);
-    }
-
-    /// Register new rated token.
-    #[payable]
-    pub fn register_rated_token(
-        &mut self,
-        rate_type: String,
-        token_id: ValidAccountId,
-    ) {
-        assert_one_yocto();
-        assert!(self.is_owner_or_guardians(), "{}", ERR100_NOT_ALLOWED);
-        let token_id: AccountId = token_id.into();
-        if global_register_rate(&rate_type, &token_id) {
-            log!(
-                "New {} typed rated token {} registered by {}",
-                rate_type,
-                token_id,
-                env::predecessor_account_id()
-            );
-        } else {
-            env::panic(
-                format!("Rated token {} already exist", token_id).as_bytes(),
-            );
-        }
-    }
-
-    /// Remove rated token, incase mistaken add operation. Only owner can call.
-    #[payable]
-    pub fn unregister_rated_token(&mut self, token_id: ValidAccountId) {
-        assert_one_yocto();
-        self.assert_owner();
-        let token_id: AccountId = token_id.into();
-        if global_unregister_rate(&token_id) {
-            log!("Rated token {} removed.", token_id);
-        } else {
-            log!("Rated token {} not exist in rate list.", token_id);
-        }
-    }
-
     pub(crate) fn assert_owner(&self) {
         assert_eq!(
             env::predecessor_account_id(),
@@ -299,7 +219,6 @@ impl Contract {
     /// Migration function from v1.5.x to v1.6.0.
     /// For next version upgrades, change this function.
     #[init(ignore_state)]
-    // [AUDIT_09]
     #[private]
     pub fn migrate() -> Self {
         let old: ContractV1 = env::state_read().expect(ERR103_NOT_INITIALIZED);

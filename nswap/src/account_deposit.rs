@@ -14,11 +14,6 @@ use near_sdk::{
     StorageUsage,
 };
 
-// [AUDIT_01]
-// const MAX_ACCOUNT_LENGTH: u128 = 64;
-// const MAX_ACCOUNT_BYTES: u128 = MAX_ACCOUNT_LENGTH + 4;
-// const MIN_ACCOUNT_DEPOSIT_LENGTH: u128 = 1 + MAX_ACCOUNT_BYTES + 16 + 4;
-
 const U128_STORAGE: StorageUsage = 16;
 const U64_STORAGE: StorageUsage = 8;
 const U32_STORAGE: StorageUsage = 4;
@@ -167,7 +162,6 @@ impl Account {
         }
     }
 
-    // [AUDIT_01]
     /// Returns amount of $NEAR necessary to cover storage used by this data structure.
     pub fn storage_usage(&self) -> Balance {
         (INIT_ACCOUNT_STORAGE
@@ -181,7 +175,6 @@ impl Account {
 
     /// Returns how much NEAR is available for storage.
     pub fn storage_available(&self) -> Balance {
-        // [AUDIT_01] avoid math overflow
         let locked = self.storage_usage();
         if self.near_amount > locked {
             self.near_amount - locked

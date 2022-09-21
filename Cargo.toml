@@ -1,7 +1,6 @@
 [workspace]
 members = [
   "./nswap",
-  "./test-rated-token",
   "./test-token"
 ]
 

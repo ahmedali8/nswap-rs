@@ -47,7 +47,6 @@ impl SimplePool {
         referral_fee: u32,
     ) -> Self {
         assert!(total_fee < FEE_DIVISOR, "{}", ERR90_FEE_TOO_LARGE);
-        // [AUDIT_10]
         assert_eq!(
             token_account_ids.len(),
             NUM_TOKENS,
@@ -64,7 +63,6 @@ impl SimplePool {
             total_fee,
             exchange_fee,
             referral_fee,
-            // [AUDIT_11]
             shares: LookupMap::new(StorageKey::Shares { pool_id: id }),
             shares_total_supply: 0,
         }
@@ -206,7 +204,6 @@ impl SimplePool {
             result.push(amount);
         }
         if prev_shares_amount == shares {
-            // [AUDIT_13] Never unregister a LP when he removed all his liquidity.
             self.shares.insert(&sender_id, &0);
         } else {
             self.shares.insert(&sender_id, &(prev_shares_amount - shares));
