@@ -33,8 +33,6 @@ pub struct RefStorageState {
 #[serde(crate = "near_sdk::serde")]
 #[cfg_attr(not(target_arch = "wasm32"), derive(Debug, PartialEq))]
 pub struct PoolInfo {
-    /// Pool kind.
-    pub pool_kind: String,
     /// List of tokens in the pool.
     pub token_account_ids: Vec<AccountId>,
     /// How much NEAR this contract has.
@@ -48,16 +46,12 @@ pub struct PoolInfo {
 
 impl From<Pool> for PoolInfo {
     fn from(pool: Pool) -> Self {
-        let pool_kind = pool.kind();
-        match pool {
-            Pool::SimplePool(pool) => Self {
-                pool_kind,
-                amp: 0,
-                token_account_ids: pool.token_account_ids,
-                amounts: pool.amounts.into_iter().map(|a| U128(a)).collect(),
-                total_fee: pool.total_fee,
-                shares_total_supply: U128(pool.shares_total_supply),
-            },
+        Self {
+            amp: 0,
+            token_account_ids: pool.token_account_ids,
+            amounts: pool.amounts.into_iter().map(|a| U128(a)).collect(),
+            total_fee: pool.total_fee,
+            shares_total_supply: U128(pool.shares_total_supply),
         }
     }
 }
@@ -114,10 +108,6 @@ impl Contract {
         self.pools.get(pool_id).expect(ERR85_NO_POOL).get_volumes()
     }
 
-    pub fn get_pool_share_price(&self, pool_id: u64) -> U128 {
-        self.pools.get(pool_id).expect(ERR85_NO_POOL).get_share_price().into()
-    }
-
     /// Returns number of shares given account has in given pool.
     pub fn get_pool_shares(
         &self,
@@ -127,7 +117,7 @@ impl Contract {
         self.pools
             .get(pool_id)
             .expect(ERR85_NO_POOL)
-            .share_balances(account_id.as_ref())
+            .share_balance_of(account_id.as_ref())
             .into()
     }
 
@@ -169,7 +159,7 @@ impl Contract {
         self.internal_get_deposit(account_id.as_ref(), token_id.as_ref()).into()
     }
 
-    /// Given specific pool, returns amount of token_out recevied swapping amount_in of token_in.
+    /// Given specific pool, returns amount of token_out received swapping amount_in of token_in.
     pub fn get_return(
         &self,
         pool_id: u64,
@@ -178,13 +168,8 @@ impl Contract {
         token_out: ValidAccountId,
     ) -> U128 {
         let pool = self.pools.get(pool_id).expect(ERR85_NO_POOL);
-        pool.get_return(
-            token_in.as_ref(),
-            amount_in.into(),
-            token_out.as_ref(),
-            &AdminFees::new(self.exchange_fee),
-        )
-        .into()
+        pool.get_return(token_in.as_ref(), amount_in.into(), token_out.as_ref())
+            .into()
     }
 
     /// Get frozenlist tokens.

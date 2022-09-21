@@ -35,8 +35,8 @@ enum TokenOrPool {
 }
 
 /// This is used to parse token_id fields in mft protocol used in ref,
-/// So, if we choose #nn as a partern, should announce it in mft protocol.
-/// cause : is not allowed in a normal account id, it can be a partern leading char
+/// So, if we choose #nn as a pattern, should announce it in mft protocol.
+/// cause : is not allowed in a normal account id, it can be a pattern leading char
 fn try_identify_pool_id(token_id: &String) -> Result<u64, &'static str> {
     if token_id.starts_with(":") {
         if let Ok(pool_id) = str::parse::<u64>(&token_id[1..token_id.len()]) {
@@ -113,7 +113,7 @@ impl Contract {
         match parse_token_id(token_id) {
             TokenOrPool::Pool(pool_id) => {
                 let pool = self.pools.get(pool_id).expect(ERR85_NO_POOL);
-                pool.share_balances(account_id)
+                pool.share_balance_of(account_id)
             }
             TokenOrPool::Token(token_id) => {
                 self.internal_get_deposit(account_id, &token_id)

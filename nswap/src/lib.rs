@@ -20,7 +20,6 @@ pub use crate::action::SwapAction;
 use crate::admin_fee::AdminFees;
 use crate::errors::*;
 use crate::pool::Pool;
-use crate::simple_pool::SimplePool;
 use crate::utils::check_token_duplicates;
 pub use crate::views::{ContractMetadata, PoolInfo};
 
@@ -31,7 +30,6 @@ mod errors;
 mod multi_fungible_token;
 mod owner;
 mod pool;
-mod simple_pool;
 mod storage_impl;
 mod token_receiver;
 mod utils;
@@ -129,13 +127,13 @@ impl Contract {
     ) -> u64 {
         self.assert_contract_running();
         check_token_duplicates(&tokens);
-        self.internal_add_pool(Pool::SimplePool(SimplePool::new(
+        self.internal_add_pool(Pool::new(
             self.pools.len() as u32,
             tokens,
             fee,
             0,
             0,
-        )))
+        ))
     }
 
     /// Executes generic set of actions.
@@ -299,7 +297,7 @@ impl Contract {
 
         let refund = env::attached_deposit().checked_sub(storage_cost).expect(
             format!(
-                "ERR_STORAGE_DEPOSIT need {}, attatched {}",
+                "ERR_STORAGE_DEPOSIT need {}, attached {}",
                 storage_cost,
                 env::attached_deposit()
             )
@@ -395,7 +393,7 @@ impl Contract {
             amount_in,
             token_out,
             min_amount_out,
-            AdminFees {
+            &AdminFees {
                 exchange_fee: self.exchange_fee,
                 exchange_id: env::current_account_id(),
                 referral_fee: self.referral_fee,
@@ -816,7 +814,7 @@ mod tests {
             .build());
         contract.withdraw(custom_token, U128(1_000), Some(true));
         let new = contract.storage_balance_of(acc.clone()).unwrap();
-        // More available storage after withdrawing & unregistering the token.
+        // More available storage after withdrawing & un-registering the token.
         assert!(new.available.0 > prev.available.0);
     }
 

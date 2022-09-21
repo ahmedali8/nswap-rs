@@ -46,7 +46,7 @@ impl Default for SwapVolume {
 }
 
 #[ext_contract(ext_self)]
-pub trait RefExchange {
+pub trait Exchange {
     fn exchange_callback_post_withdraw(
         &mut self,
         token_id: AccountId,
